@@ -1,10 +1,11 @@
 const { generateRandomString } = require("../utils/utilityFunctions");
 const axios = require("axios");
-const { client_id, client_secret, redirect_uri } = process.env;
+const { client_id, client_secret, redirect_uri, frontend_uri } = process.env;
 const querystring = require("querystring");
 const stateKey = "spotify_auth_state";
 
 exports.loginRequest = (req, res, next) => {
+  console.log("here?");
   const state = generateRandomString(16);
   const scope = "user-top-read user-read-recently-played user-library-read";
   res.cookie(stateKey, state);
@@ -21,11 +22,15 @@ exports.loginRequest = (req, res, next) => {
 };
 
 exports.loginCallback = (req, res, next) => {
+  console.log("callback being called");
   const code = req.query.code || null;
   const state = req.query.state || null;
+  // console.log("cookies: " + req.cookies + req.cookies[stateKey] + stateKey);
   const storedState = req.cookies ? req.cookies[stateKey] : null;
 
   if (state === null || state !== storedState) {
+    // console.log("somehting went wrong " + state, storedState, code);
+    // console.log(req);
     res.redirect("/#" + querystring.stringify({ error: "state_mismatch" }));
   } else {
     res.clearCookie(stateKey);
@@ -36,9 +41,9 @@ exports.loginCallback = (req, res, next) => {
       redirect_uri: redirect_uri,
     });
     const header = {
-      Authorization:
-        "Basic " +
-        Buffer.from(client_id + ":" + client_secret).toString("base64"),
+      Authorization: `Basic ${Buffer.from(
+        client_id + ":" + client_secret
+      ).toString("base64")}`,
       "Content-Type": "application/x-www-form-urlencoded",
     };
 
@@ -51,20 +56,15 @@ exports.loginCallback = (req, res, next) => {
       .then(({ data }) => {
         const access_token = data.access_token;
         const refresh_token = data.refresh_token;
-
-        // just test it works
-        const profileURL = "https://api.spotify.com/v1/me";
-        const header = {
-          headers: {
-            Authorization: "Bearer " + access_token,
-          },
-        };
-
-        return axios.get(profileURL, header);
-      })
-      .then((data) => {
-        console.log("DATA RECEIVED FROM SPOTIFY!!!!=====================>");
-        console.log(data);
+        console.log(
+          frontend_uri + querystring.stringify({ access_token, refresh_token })
+        );
+        res.redirect(
+          `${frontend_uri}?${querystring.stringify({
+            access_token,
+            refresh_token,
+          })}`
+        );
       })
       .catch((err) => {
         console.log("ERROR==========================>");
