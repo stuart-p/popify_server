@@ -22,15 +22,11 @@ exports.loginRequest = (req, res, next) => {
 };
 
 exports.loginCallback = (req, res, next) => {
-  console.log("callback being called");
   const code = req.query.code || null;
   const state = req.query.state || null;
-  // console.log("cookies: " + req.cookies + req.cookies[stateKey] + stateKey);
   const storedState = req.cookies ? req.cookies[stateKey] : null;
 
   if (state === null || state !== storedState) {
-    // console.log("somehting went wrong " + state, storedState, code);
-    // console.log(req);
     res.redirect("/#" + querystring.stringify({ error: "state_mismatch" }));
   } else {
     res.clearCookie(stateKey);
@@ -56,9 +52,6 @@ exports.loginCallback = (req, res, next) => {
       .then(({ data }) => {
         const access_token = data.access_token;
         const refresh_token = data.refresh_token;
-        console.log(
-          frontend_uri + querystring.stringify({ access_token, refresh_token })
-        );
         res.redirect(
           `${frontend_uri}?${querystring.stringify({
             access_token,
