@@ -5,7 +5,6 @@ const querystring = require("querystring");
 const stateKey = "spotify_auth_state";
 
 exports.loginRequest = (req, res, next) => {
-  console.log("here?");
   const state = generateRandomString(16);
   const scope = "user-top-read user-read-recently-played user-library-read";
   res.cookie(stateKey, state);
