@@ -26,7 +26,8 @@ exports.loginCallback = (req, res, next) => {
   const storedState = req.cookies ? req.cookies[stateKey] : null;
 
   if (state === null || state !== storedState) {
-    res.redirect("/#" + querystring.stringify({ error: "state_mismatch" }));
+    // res.redirect("/#" + querystring.stringify({ error: "state_mismatch" }));
+    next({ status: 401, msg: "Unauthorised. state mismatch" });
   } else {
     res.clearCookie(stateKey);
     const tokenRequestUrl = "https://accounts.spotify.com/api/token";
@@ -59,8 +60,7 @@ exports.loginCallback = (req, res, next) => {
         );
       })
       .catch((err) => {
-        console.log("ERROR==========================>");
-        console.log(err);
+        next({ status: 401, msg: "Unauthorised, Spotify rejected request" });
       });
   }
 };

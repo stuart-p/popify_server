@@ -5,10 +5,23 @@ const {
   refreshRequest,
 } = require("../controllers/auth_controller");
 
-authRouter.route("/login").get(loginRequest);
+const errorHandler = require("../error_handlers/errorHandler");
 
-authRouter.route("/callback").get(loginCallback);
+authRouter
+  .route("/login")
+  .get(loginRequest)
+  .all(errorHandler.unauthorisedMethod);
 
-authRouter.route("/refresh_token").get(refreshRequest);
+authRouter
+  .route("/callback")
+  .get(loginCallback)
+  .all(errorHandler.unauthorisedMethod);
+
+authRouter
+  .route("/refresh_token")
+  .get(refreshRequest)
+  .all(errorHandler.unauthorisedMethod);
+
+authRouter.route("/").all(errorHandler.unauthorisedMethod);
 
 module.exports = { authRouter };
