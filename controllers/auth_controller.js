@@ -4,6 +4,7 @@ const { client_id, client_secret, redirect_uri, frontend_uri } = process.env;
 const querystring = require("querystring");
 const stateKey = "spotify_auth_state";
 
+//controller used when client initiates an OAuth request
 exports.loginRequest = (req, res, next) => {
   const state = generateRandomString(16);
   const scope = "user-top-read user-read-recently-played user-library-read";
@@ -20,13 +21,13 @@ exports.loginRequest = (req, res, next) => {
   );
 };
 
+//controller used when Spotify calls back to server with OAuth details
 exports.loginCallback = (req, res, next) => {
   const code = req.query.code || null;
   const state = req.query.state || null;
   const storedState = req.cookies ? req.cookies[stateKey] : null;
 
   if (state === null || state !== storedState) {
-    // res.redirect("/#" + querystring.stringify({ error: "state_mismatch" }));
     next({ status: 401, msg: "Unauthorised. state mismatch" });
   } else {
     res.clearCookie(stateKey);
